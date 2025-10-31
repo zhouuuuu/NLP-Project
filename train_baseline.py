@@ -124,14 +124,14 @@ with open("models/open_threshold.txt", "w") as f:
     f.write(str(threshold))
 print("Models saved under /models")
 
-# 结果 CSV
+
 pd.DataFrame({
     "metric":["val_acc","val_f1","test_acc","test_f1","open_auroc","open_eer","open_threshold"],
     "value":[val_acc,val_f1,test_acc,test_f1,auroc,EER,threshold]
 }).to_csv("outputs/baseline_results.csv", index=False)
 print("baseline_results.csv saved")
 
-# 权重词表
+
 feature_names = np.array(vect.get_feature_names_out())
 coef = clf.coef_
 top_words = []
