@@ -7,23 +7,19 @@ This project implements a closed-set author classification and open-set author-s
 ### Project Structure
 
 ```
-author_style_system/
-│
-├── train_baseline.py          # Train model & export artifacts
-├── predict_topk.py            # Inference interface
-├── author_style_dataset_balanced.csv
-│
-├── models/                    # Saved model artifacts
-│   ├── tfidf_vectorizer.pkl
-│   ├── logistic_model.pkl
-│   ├── label_encoder.pkl
+baseline
+├── models
 │   ├── class_centroids.npy
-│   └── open_threshold.txt
-│
-└── outputs/                   # Evaluation results
-    ├── baseline_results.csv
-    ├── confusion_matrix.png
-    └── top_weighted_features.csv
+│   ├── label_encoder.pkl
+│   ├── logistic_model.pkl
+│   ├── open_threshold.txt
+│   └── tfidf_vectorizer.pkl
+├── outputs
+│   ├── baseline_results.csv
+│   ├── confusion_matrix.png
+│   └── top_weighted_features.csv
+├── predict_topk.py
+└── train_baseline.py
 ```
 
 ### 1. Training
