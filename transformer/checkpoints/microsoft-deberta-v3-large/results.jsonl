@@ -1,0 +1,4 @@
+{"time": "2025-11-03 14:50:27", "model_name": "microsoft/deberta-v3-large", "val_macro_f1": 0.3929787062615233, "supcon_lambda": 0.1, "lr": 2e-05, "epochs": 8}
+{"time": "2025-11-03 14:54:49", "model_name": "microsoft/deberta-v3-large", "val_macro_f1": 0.6575153356664905, "supcon_lambda": 0.1, "lr": 2e-05, "epochs": 8}
+{"time": "2025-11-03 14:59:10", "model_name": "microsoft/deberta-v3-large", "val_macro_f1": 0.7521303605423793, "supcon_lambda": 0.1, "lr": 2e-05, "epochs": 8}
+{"time": "2025-11-03 15:07:47", "model_name": "microsoft/deberta-v3-large", "val_macro_f1": 0.8113864947182111, "supcon_lambda": 0.1, "lr": 2e-05, "epochs": 8}
