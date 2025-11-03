@@ -1,0 +1,57 @@
+=== Validation Results ===
+Macro-F1=0.7331
+
+                  precision    recall  f1-score   support
+
+ArthurConanDoyle      0.931     0.924     0.927       131
+  CharlesDickens      0.867     0.737     0.796       353
+      Chesterton      0.947     0.922     0.934       116
+   EdgarAllanPoe      0.611     0.985     0.754       201
+  HermanMelville      1.000     0.392     0.563       120
+      JaneAusten      0.691     0.821     0.750       117
+       MarkTwain      0.962     0.877     0.917        57
+      OscarWilde      0.545     0.993     0.704       152
+   VirginiaWoolf      0.857     0.147     0.251       163
+
+        accuracy                          0.748      1410
+       macro avg      0.823     0.755     0.733      1410
+    weighted avg      0.808     0.748     0.722      1410
+
+[[121   0   0   8   0   0   1   1   0]
+ [  2 260   0  45   0  41   1   4   0]
+ [  1   0 107   0   0   0   0   7   1]
+ [  0   2   0 198   0   0   0   1   0]
+ [  1   2   0  69  47   1   0   0   0]
+ [  0  21   0   0   0  96   0   0   0]
+ [  4   0   0   0   0   0  50   0   3]
+ [  1   0   0   0   0   0   0 151   0]
+ [  0  15   6   4   0   1   0 113  24]]
+
+=== Test Results ===
+Macro-F1=0.7010
+
+                  precision    recall  f1-score   support
+
+ArthurConanDoyle      0.523     0.829     0.641       111
+  CharlesDickens      0.750     0.487     0.591        80
+      Chesterton      0.968     0.312     0.472       192
+   EdgarAllanPoe      0.435     0.913     0.589       172
+  HermanMelville      1.000     0.342     0.510       301
+      JaneAusten      0.994     0.970     0.982       168
+       MarkTwain      0.714     0.921     0.805        38
+      OscarWilde      0.697     1.000     0.821       101
+   VirginiaWoolf      0.831     0.976     0.898       293
+
+        accuracy                          0.712      1456
+       macro avg      0.768     0.750     0.701      1456
+    weighted avg      0.816     0.712     0.691      1456
+
+[[ 92   0   0   2   0   0   0  11   6]
+ [  0  39   2  23   0   0   5  11   0]
+ [ 78   1  60   0   0   0   0   1  52]
+ [  1   1   0 157   0   0   1  12   0]
+ [  0  10   0 175 103   1   8   4   0]
+ [  1   0   0   2   0 163   0   2   0]
+ [  1   0   0   2   0   0  35   0   0]
+ [  0   0   0   0   0   0   0 101   0]
+ [  3   1   0   0   0   0   0   3 286]]
