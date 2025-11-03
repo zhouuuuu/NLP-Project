@@ -1,0 +1,5 @@
+{"time": "2025-11-03 17:07:21", "model_name": "bert-base-uncased", "val_macro_f1": 0.206669863394361, "supcon_lambda": 0.1, "lr": 2e-05, "epochs": 8}
+{"time": "2025-11-03 17:08:33", "model_name": "bert-base-uncased", "val_macro_f1": 0.5673365285082048, "supcon_lambda": 0.1, "lr": 2e-05, "epochs": 8}
+{"time": "2025-11-03 17:09:44", "model_name": "bert-base-uncased", "val_macro_f1": 0.6318564657440151, "supcon_lambda": 0.1, "lr": 2e-05, "epochs": 8}
+{"time": "2025-11-03 17:12:05", "model_name": "bert-base-uncased", "val_macro_f1": 0.639601013112595, "supcon_lambda": 0.1, "lr": 2e-05, "epochs": 8}
+{"time": "2025-11-03 17:15:34", "model_name": "bert-base-uncased", "val_macro_f1": 0.6475793979379257, "supcon_lambda": 0.1, "lr": 2e-05, "epochs": 8}
