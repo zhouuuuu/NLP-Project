@@ -1,0 +1,371 @@
+# --- START NLTK 'punkt' VERIFIER ---
+# This block will run first to fix any NLTK download issues.
+import nltk
+import os
+import sys
+
+# Define the data path
+nltk_data_dir = os.path.expanduser('~/nltk_data')
+if nltk_data_dir not in nltk.data.path:
+    nltk.data.path.insert(0, nltk_data_dir)
+
+try:
+    print("--- Verifying NLTK 'punkt' package... ---")
+    nltk.data.find('tokenizers/punkt')
+    print("[NLTK] 'punkt' folder found. Testing it...")
+    nltk.word_tokenize("This is a test.")
+    print("[NLTK] 'punkt' package is OK.")
+except LookupError:
+    print("[NLTK] 'punkt' not found or corrupted. Downloading...")
+    try:
+        nltk.download('punkt', download_dir=nltk_data_dir)
+        print("[NLTK] Download complete. Testing again...")
+        nltk.word_tokenize("This is a test.")
+        print("[NLTK] 'punkt' package is now fixed and OK.")
+    except Exception as e:
+        print(f"\n[NLTK] FATAL ERROR: Failed to download 'punkt': {e}")
+        print("Please check your internet connection and try running the script again.")
+        sys.exit(1)
+
+print("--- NLTK check complete. Starting main script... ---\n")
+# --- END NLTK 'punkt' VERIFIER ---
+
+
+import pandas as pd
+from sklearn.model_selection import train_test_split
+import requests
+import re
+import spacy
+import hashlib
+from tqdm import tqdm
+import time
+
+
+# --- 组 1: "集内"作者 (In-Set Authors) ---
+# 这 9 位作者将出现在 train, val, 和 test 集中
+AUTHORS_IN_SET = {
+    "JaneAusten": [
+        (121, "NorthangerAbbey"), (161, "SenseAndSensibility"), (158, "Emma"),
+        (141, "MansfieldPark"), (1342, "PrideAndPrejudice"), (946, "LadySusan"),
+        (105, "Persuasion")
+    ],
+    "CharlesDickens": [
+        (700, "TheOldCuriosityShop"), (564, "TheMysteryofEdwinDrood"), (766, "DavidCopperfield"),
+        (678, "TheCricketontheHearth"), (821, "DombeyandSon"), (882, "SketchesbyBoz"),
+        (883, "OurMutualFriend"), (914, "TheUncommercialTraveller")
+    ],
+    "EdgarAllanPoe": [
+        (8893, "SelectionsfromPoe"), (1065, "TheRaven"),
+        (2149, "TheWorksofEdgarAllanPoeVolume3"), (2150, "TheWorksofEdgarAllanPoeVolume4"),
+        (2151, "TheWorksofEdgarAllanPoeVolume5"), (2148, "TheWorksofEdgarAllanPoeVolume2"),
+        (932, "TheFalloftheHouseofUsher"),
+        (1063, "TheCaskofAmontillado")
+    ],
+    "MarkTwain": [
+        (1044, "ExtractfromCaptainStormfieldsVisittoHeaven"), (245, "LifeOnTheMississippi"),
+        (1086, "AHorsesTale"), (1213, "TheManThatCorruptedHadleyburg"), (1837, "ThePrinceandthePauper"),
+        (1892, "ExtractsfromAdamDiary"), (91, "TomSawyerAbroad"), (3171, "InDefenceofHarrietShelley")
+    ],
+    "ArthurConanDoyle": [
+        (126, "ThePoisonBelt"), (139, "TheLostWorld"), (221, "TheReturnofSherlockHolmes"),
+        (244, "AStudyinScarlet"), (294, "TheCaptainofthePolestar"), (355, "TheParasiteAStory"),
+        (356, "BeyondTheCity"), (439, "TheVitalMessage"), (537, "TalesofTerrorandMystery"),
+        (834, "TheMemoirsofSherlockHolmes")
+    ],
+    "OscarWilde": [
+        (774, "EssaysandLectures"), (790, "LadyWindermereFan"), (844, "ATrivialComedyforSeriousPeople"),
+        (854, "AWomanofNoImportance"), (873, "AHouseofPomegranates"), (875, "TheDuchessofPadua"),
+        (885, "AnIdealHusband"), (887, "Intentions"), (902, "TheHappyPrince"),
+        (921, "DProfundis"), (1017, "TheSoulofManunderSocialism"), (1031, "Charmides"),
+        (1057, "Poems"), (1339, "Salomé")
+    ],
+    "HermanMelville": [
+        (2489, "MobyDick"), (2694, "IandMyChimney"), (4045, "OmooAdventuresintheSouthSeas"),
+        (8118, "RedburnHisFirstVoyage"), (13721, "Mardi2"), (13720, "Mardi1"),
+        (10712, "WhiteJacket"), (11231, "AStoryofWallStreet"), (12384, "BattlePiecesandAspects"),
+    ],
+    "Chesterton": [
+        (2134, "UtopiaofUsurersandOtherEssays"), (5265, "TheBallandtheCross"), (8092, "TremendousTrifles"),
+        (9656, "AlarmsandDiscursions"), (11505, "AllThingsConsidered"), (11554, "TheCrimesofEngland"),
+        (11560, "TheBarbarismofBerlin"), (12245, "TheDefendant")
+    ],
+    "VirginiaWoolf": [
+        (5670, "JacobRoom"), (1245, "NightandDay"), (29220, "MondayOrTuesday"),
+        (63022, "MrBennettandMrsBrown"), (63107, "MrsDallowayinBondStreet"),
+        (64457, "TheCommonReader"), (144, "TheVoyageOut")
+    ]
+}
+
+# --- 组 2: "集外"作者 (Out-of-Set Authors) ---
+# 这 2 位新作者将 *仅仅* 出现在 test 集中
+AUTHORS_OUT_OF_SET = {
+    # Mary Shelley (玛丽·雪莱) - 哥特式
+    "MaryShelley": [
+        (84, "Frankenstein"),
+        (6447, "Proserpine")# 添加另一本以增加样本
+    ],
+    # Nathaniel Hawthorne (纳撒尼尔·霍桑) - 美国哥特式
+    "NathanielHawthorne": [
+        (8207, "Plays"),
+        (7085, "Fanshawe")
+    ],
+    "Clara":[
+        (2778,"Jewel"),
+        (52110,"keynote")
+    ]
+}
+
+try:
+    import requests
+except ModuleNotFoundError:
+    print("\n--- 依赖缺失 ---")
+    print("未找到 'requests' 库。请在你的 'pytorch' 环境中运行:")
+    print("conda install requests")
+    print("-------------------")
+    sys.exit(1)
+
+all_works_metadata = []  # 这将包含 *所有* 11 位作者
+split_mapping = {}  # 这是最终的映射
+print("Building work list...")
+
+works_in_set = []
+for author, works in AUTHORS_IN_SET.items():
+    for book_id, work_name in works:
+        works_in_set.append({
+            "author": author, "book_name": work_name, "gutenberg_id": book_id
+        })
+works_df_in_set = pd.DataFrame(works_in_set)
+all_works_metadata.extend(works_in_set) 
+
+works_out_of_set = []
+for author, works in AUTHORS_OUT_OF_SET.items():
+    for book_id, work_name in works:
+        works_out_of_set.append({
+            "author": author, "book_name": work_name, "gutenberg_id": book_id
+        })
+works_df_out_of_set = pd.DataFrame(works_out_of_set)
+all_works_metadata.extend(works_out_of_set) 
+
+print("\nSplitting IN-SET works (by BOOK) into train/val/test sets...")
+train_works, test_val_works = train_test_split(
+    works_df_in_set,
+    test_size=0.30,  # 30% 用于 val + test
+    random_state=42,
+    stratify=works_df_in_set['author']  
+)
+val_works, test_works_in_set = train_test_split(
+    test_val_works,
+    test_size=0.50,  # 30% * 50% = 15%
+    random_state=42,
+    stratify=test_val_works['author'] 
+)
+
+print("Building final split mapping...")
+for _, row in train_works.iterrows():
+    split_mapping[row['book_name']] = "train"
+for _, row in val_works.iterrows():
+    split_mapping[row['book_name']] = "val"
+for _, row in test_works_in_set.iterrows():
+    split_mapping[row['book_name']] = "test" 
+for _, row in works_df_out_of_set.iterrows():
+    split_mapping[row['book_name']] = "test"  
+
+works_df_total = pd.DataFrame(all_works_metadata)
+
+print(f"\nTotal books (In-Set + Out-of-Set): {len(works_df_total)}")
+print("--- IN-SET Authors (9) ---")
+print("Author distribution (by book):")
+print(works_df_in_set['author'].value_counts())
+print(f"Split: Train books: {len(train_works)}, Val books: {len(val_works)}, Test books: {len(test_works_in_set)}")
+print("--- OUT-OF-SET Authors (2) ---")
+print("Author distribution (by book):")
+print(works_df_out_of_set['author'].value_counts())
+print(f"Split: All {len(works_df_out_of_set)} books assigned to TEST set.")
+
+
+def fetch_and_clean_gutenberg_text(gutenberg_id):
+    url = f"https://www.gutenberg.org/cache/epub/{gutenberg_id}/pg{gutenberg_id}.txt"
+    session = requests.Session()
+    session.headers.update({
+                               'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36'})
+    raw_text = None
+    try:
+        response = session.get(url, timeout=20)
+        if response.status_code == 200:
+            raw_text = response.text
+        else:
+            raise requests.RequestException(f"Failed (status {response.status_code})")
+    except requests.RequestException as e:
+        print(f"\nDownload Error for ID {gutenberg_id} (URL: {url}): {e}")
+        return None
+    if isinstance(raw_text, bytes):
+        raw_text = raw_text.decode('utf-8', errors='ignore')
+
+    start_match = re.search(r"\*\*\*\s*START OF (THIS|THE) PROJECT GUTENBERG EBOOK .* \*\*\*", raw_text, re.IGNORECASE)
+    end_match = re.search(r"\*\*\*\s*END OF (THIS|THE) PROJECT GUTENBERG EBOOK .* \*\*\*", raw_text, re.IGNORECASE)
+    core_text = raw_text
+    if start_match and end_match:
+        core_text = raw_text[start_match.end():end_match.start()]
+    else:
+        core_text = re.sub(r'^(Title|Author|Release Date|Language):.*\n', '', core_text, flags=re.MULTILINE)
+        core_text = re.sub(r'Produced by.*\n', '', core_text, flags=re.IGNORECASE)
+    core_text = re.sub(r'\[.*?\]', '', core_text)
+    core_text = re.sub(r'\s+', ' ', core_text).strip()
+    return core_text
+
+def split_into_chapters(book_text, book_name):
+    chapter_pattern = r'^(CHAPTER\s+(?:[IVXLCDM]+|\d+)|STAVE\s+\w+|[IVXLCDM]+\.?\s*$|\d+\.?\s*$)'
+    parts = re.split(chapter_pattern, book_text, flags=re.IGNORECASE | re.MULTILINE)
+    chapters = []
+    min_chapter_word_count = 100
+    if len(parts) == 1:
+        if len(nltk.word_tokenize(book_text)) > min_chapter_word_count:
+            chapters.append((f"{book_name}_Full", book_text))
+        return chapters
+    intro_text = parts[0].strip()
+    if len(nltk.word_tokenize(intro_text)) > min_chapter_word_count:
+        chapters.append((f"{book_name}_Intro", intro_text))
+    for i in range(1, len(parts), 2):
+        if i + 1 < len(parts):
+            title_raw = parts[i].strip();
+            text = parts[i + 1].strip()
+            title_id = re.sub(r'\s+', '_', title_raw);
+            title_id = re.sub(r'\W', '', title_id)
+            if not title_id: title_id = f"Ch{i // 2 + 1}"
+            if len(nltk.word_tokenize(text)) > min_chapter_word_count:
+                chapters.append((f"{book_name}_{title_id}", text))
+    return chapters
+
+def chunk_text_by_sentences(full_text, min_words=128, max_words=512):
+    sentences = nltk.sent_tokenize(full_text)
+    chunks = [];
+    current_chunk_sentences = [];
+    current_chunk_word_count = 0
+    for sentence in sentences:
+        sentence_word_count = len(nltk.word_tokenize(sentence))
+        if sentence_word_count > max_words:
+            if current_chunk_sentences: chunks.append(" ".join(current_chunk_sentences))
+            chunks.append(sentence);
+            current_chunk_sentences = [];
+            current_chunk_word_count = 0
+            continue
+        if current_chunk_word_count + sentence_word_count > max_words:
+            if current_chunk_sentences: chunks.append(" ".join(current_chunk_sentences))
+            current_chunk_sentences = [sentence];
+            current_chunk_word_count = sentence_word_count
+        else:
+            current_chunk_sentences.append(sentence);
+            current_chunk_word_count += sentence_word_count
+    if current_chunk_sentences and current_chunk_word_count >= min_words:
+        chunks.append(" ".join(current_chunk_sentences))
+    final_chunks = [chunk for chunk in chunks if len(nltk.word_tokenize(chunk)) >= min_words]
+    return final_chunks
+
+
+print("\nLoading spaCy model 'en_core_web_md' for anonymization...")
+try:
+    nlp = spacy.load("en_core_web_md", disable=["parser", "lemmatizer"])
+except IOError:
+    print("\n--- FATAL ERROR ---")
+    print("spaCy model 'en_core_web_md' not found.")
+    print("Please run: python -m spacy download en_core_web_md")
+    sys.exit(1)
+REPLACEMENT_MAP = {
+    "PERSON": "<PER>", "GPE": "<LOC>", "LOC": "<LOC>", "ORG": "<ORG>",
+    "DATE": "<DATE>", "TIME": "<TIME>", "CARDINAL": "<NUM>",
+    "ORDINAL": "<NUM>", "MONEY": "<MONEY>"
+}
+
+
+def anonymize_text(text):
+    doc = nlp(text)
+    anonymized_pieces = [];
+    last_end = 0
+    for ent in doc.ents:
+        if ent.label_ in REPLACEMENT_MAP:
+            anonymized_pieces.append(text[last_end: ent.start_char])
+            anonymized_pieces.append(REPLACEMENT_MAP[ent.label_]);
+            last_end = ent.end_char
+    anonymized_pieces.append(text[last_end:])
+    final_text = "".join(anonymized_pieces);
+    return re.sub(r'\s+', ' ', final_text).strip()
+
+
+final_data = []
+seen_chunks_hash = set()
+print("\n--- Starting Data Processing (All 11 Authors) ---")
+for _, book_row in tqdm(works_df_total.iterrows(), total=len(works_df_total), desc="Processing Books"):
+    author = book_row['author']
+    book_name = book_row['book_name']
+    gutenberg_id = book_row['gutenberg_id']
+
+    split = split_mapping.get(book_name)
+
+    if not split:
+        print(f"Warning: Book '{book_name}' not found in split mapping. Skipping.")
+        continue
+    try:
+        book_text = fetch_and_clean_gutenberg_text(gutenberg_id)
+        if book_text is None or len(book_text) < 500:
+            print(f"\n[SKIP] Failed to fetch or clean book_id {gutenberg_id} ({book_name}).")
+            continue
+        chapters = split_into_chapters(book_text, book_name)
+        for work_id, chapter_text in chapters:
+            chunks = chunk_text_by_sentences(chapter_text, min_words=128, max_words=512)
+            for chunk in chunks:
+                chunk_hash = hashlib.sha256(chunk.encode('utf-8')).hexdigest()
+                if chunk_hash in seen_chunks_hash: continue
+                seen_chunks_hash.add(chunk_hash)
+                anonymized_chunk = anonymize_text(chunk)
+                final_data.append({
+                    "author": author,
+                    "text": anonymized_chunk,
+                    "work_id": work_id,
+                    "split": split  
+                })
+        time.sleep(2)  
+    except Exception as e:
+        print(f"\n[CRITICAL SKIP] Error processing book_id {gutenberg_id} ({book_name}).")
+        print(f"Exception Type: {type(e).__name__}, Details: {e}")
+        print("This book will be skipped.")
+
+print("\n--- Processing Complete! ---")
+if not final_data:
+    print("Fatal Error: No data was processed. Check Gutenberg IDs and internet connection.")
+else:
+    unbalanced_df = pd.DataFrame(final_data)
+
+    print("\n--- Balancing Dataset (Downsampling) ---")
+    SAMPLE_CEILING = 1000  # 设定一个天花板：每个作者最多 1000 个样本
+    author_dfs = []
+
+    for author in unbalanced_df['author'].unique():
+        author_df = unbalanced_df[unbalanced_df['author'] == author]
+        if len(author_df) > SAMPLE_CEILING:
+            print(f"Downsampling '{author}' from {len(author_df)} to {SAMPLE_CEILING} samples.")
+            author_dfs.append(author_df.sample(SAMPLE_CEILING, random_state=42))
+        else:
+            print(f"Keeping all {len(author_df)} samples for '{author}'.")
+            author_dfs.append(author_df)
+
+    balanced_df = pd.concat(author_dfs)
+    print("--- Balancing Complete ---")
+    balanced_df = balanced_df.sample(frac=1, random_state=42).reset_index(drop=True)
+
+    output_filename = "author_style_dataset_OPENSET.csv"
+    balanced_df.to_csv(output_filename, index=False)
+    print(f"\nSuccessfully saved OPENSET dataset to {output_filename}")
+
+    print("\n--- BALANCED Dataset Preview (Top 5 rows): ---")
+    print(balanced_df.head())
+    print("\n--- BALANCED Dataset Stats ---")
+    print(f"Total samples (chunks): {len(balanced_df)}")
+    print("\nSplit distribution (by chunk):")
+    print(balanced_df['split'].value_counts(normalize=True).map("{:.1%}".format))
+    print("\nAuthor distribution (by chunk):")
+    print(balanced_df['author'].value_counts())
+
+    print("\n--- Authors in TEST set (Verification) ---")
+    test_set_authors = balanced_df[balanced_df['split'] == 'test']['author'].unique()
+    print(f"Total authors in test set: {len(test_set_authors)}")
+    print(test_set_authors)
