@@ -1,0 +1,41 @@
+=== Source ===
+The boy stood by the narrow window of the small workshop, watching the rain slide down the glass, and wondering whether the day would bring customers, or only the same quiet hours filled with the ticking of the old clock and his own thoughts.
+
+=== Original Sentence (Baseline) ===
+The boy stood by the narrow window of the small workshop, watching the rain slide down the glass, and wondering whether the day would bring customers, or only the same quiet hours filled with the ticking of the old clock and his own thoughts.
+  -> p_style=0.000 | sim=1.000 | ppl=55.7 | score=0.400
+
+=== Best (CharlesDickens) ===
+The child stood near the narrow window of the little seminary, seeing the rain sliping down the glass, and wondering if the day would lead to customers, or just the same silent hours filled with ticking of the old clock and its own thoughts.
+
+=== Candidates (text | p_style | sim | ppl | score) ===
+The child stood near the narrow window of the little seminary, seeing the rain sliping down the glass, and wondering if the day would lead to customers, or just the same silent hours filled with ticking of the old clock and its own thoughts.
+  -> 1.000 | 0.856 | 99.4 | 1.108
+
+The boy was standing at the narrow window of the little workshop, seeing the rain gliding away from the glass, wondering as to whether the day would bring the guests, or only the quiet hours filled with a cover of the old clock and his own thoughts.
+  -> 0.000 | 0.926 | 61.6 | 0.369
+
+The boy stood beside the window with the small workshop, watching the rain slide into the glass and pondering whether the day would bring the guests, or only the same quiet hours full of the rest of the old clock and his own thoughts.
+  -> 0.000 | 0.937 | 78.9 | 0.365
+
+The boy stood near the narrow window of the small workshop, looking out at the rain drop down the glass, wondering himself whether the morning bring customers, or just the same quiet hours filled with ticking the old clock and his own thoughts.
+  -> 0.000 | 0.937 | 104.0 | 0.354
+
+The boy set beside the narrow window of the workshop, watching the rain slide back down the glass and wondering if the day would lead the customers, or just the same quiet hours around with the ticking of the old clock and its own thoughts.
+  -> 0.000 | 0.951 | 119.8 | 0.352
+
+The man stood in front of the narrow window of the little workshop, looking at the rain slipping into the glass, and wondering if the day brings clients, or just the very quiet hours filled with the tick-tock of the old clock and its own thoughts.
+  -> 0.000 | 0.842 | 49.3 | 0.345
+
+The boy stood at a narrow window in the small workshop, observed the rain slide down the movie and wondered if the day would come to the account house or not just in the same quiet hours, filled with the ticking of the old watches and its own thoughts.
+  -> 0.000 | 0.882 | 85.4 | 0.343
+
+The boy stood near the narrow window of the workshop, watching the rain slip into the pantry, and wondering if the day will bring the guests, or just for the same tranquil hours filled with the tick of the old clock and his own thoughts.
+  -> 0.000 | 0.865 | 73.4 | 0.342
+
+This young man stood in the narrow window of his small workshop, watched in the rain the window slide down, and wondered if the day would involve to customers or only those same rest hours, filled with the ticking of the old clock and its own thoughts.
+  -> 0.000 | 0.888 | 96.7 | 0.341
+
+The boy sat near the narrow window of the little workshop looking at the rain slipping through the glass, and wondering if the day would train clients, or only the same quiet hours filled with the spot of the ancient clock and his own thoughts.
+  -> 0.000 | 0.898 | 110.5 | 0.338
+
