@@ -1,0 +1,16 @@
+=== Source ===
+She looked out of the window, wondering whether the day would bring anything new.
+
+=== Best (JaneAusten) ===
+She looked out the window, wondering if the day would bring something new.
+
+=== Candidates (text | p_style | sim | ppl | score) ===
+She looked out the window, wondering if the day would bring something new.
+  -> 0.000 | 0.987 | 21.5 | 0.395
+
+She looked out the window, wondering if the day would bring anything new.
+  -> 0.000 | 0.991 | 21.7 | 0.393
+
+She looked out the window and wondered if the day would bring something new.
+  -> 0.000 | 0.970 | 23.7 | 0.339
+
